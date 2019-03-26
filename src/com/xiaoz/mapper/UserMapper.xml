@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiaoz.mapper.UserMapper">
+    <insert id="save" parameterType="user">
+        insert into user (username, sex, birthday, address)
+        value (#{username}, #{sex}, #{birthday}, #{address})
+    </insert>
+
+    <select id="findUserById" parameterType="int" resultType="user">
+        SELECT * FROM user where id = #{id}
+    </select>
+
+
+    <!--通过包装类-->
+    <select id="findUserByUserQueryVO" parameterType="userQueryVO" resultType="user">
+        SELECT u.* FROM user u where u.id = #{user.id}
+    </select>
+    <!--通过map-->
+    <select id="findUserByMap" parameterType="hashmap" resultType="user">
+        SELECT u.* FROM user u where username like "%"#{username}"%" and sex = #{sex}
+    </select>
+    
+    <select id="findUserCount" parameterType="userQueryVO" resultType="int">
+        select count(*) from user where sex = #{user.sex}
+    </select>
+    
+    <resultMap id="userResultMap" type="user">
+        <id property="id" column="id_"></id>
+        <result property="username" column="username_"></result>
+        <result property="sex" column="sex_"></result>
+        <result property="birthday" column="birthday_"></result>
+        <result property="address" column="address_"></result>
+    </resultMap>
+    <select id="findUserByIdResultMap" parameterType="int" resultMap="userResultMap">
+        select id id_,username username_,sex sex_,birthday birthday_,address address_ from user where id = #{id}
+    </select>
+
+    <sql id="select_user_where">
+        <if test="user != null">
+            <if test="user.sex != null and user.sex != ''">
+                sex = #{user.sex}
+            </if>
+            <if test="user.username != null and user.username != ''">
+                and username like "%"#{user.username}"%"
+            </if>
+        </if>
+    </sql>
+    <select id="findUserList" parameterType="userQueryVO" resultType="user">
+        select * from user
+        <where>
+            <include refid="select_user_where"></include>
+        </where>
+    </select>
+
+    <select id="findUserByIds" parameterType="userQueryVO" resultType="user">
+        /*SELECT * FROM user WHERE id in (1,2,3)*/
+        SELECT * FROM user
+        <where>
+            <if test="ids != null and ids.size > 0">
+            <!--
+            collection:集合,写集合属性
+            item:遍历接收的变量
+            open:遍历开始
+            close:遍历结束
+            separator:拼接格式
+            for(Integer id: ids)
+            -->
+                <foreach collection="ids" item="id" open="id in(" close=")" separator=",">
+                    ${id}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="findUserByIds2" parameterType="list" resultType="user">
+        /*SELECT * FROM user WHERE id in (1,2,3)*/
+        SELECT * FROM user
+        <where>
+            <if test="list != null and list.size > 0">
+                <foreach collection="list" item="id" open="id in(" close=")" separator=",">
+                    ${id}
+                </foreach>
+            </if>
+        </where>
+    </select>
+</mapper>
